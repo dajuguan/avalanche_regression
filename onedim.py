@@ -6,6 +6,9 @@ from avalanche.benchmarks.utils import make_avalanche_dataset
 from avalanche.benchmarks.utils import DataAttribute, ConstantSequence
 from replay_plugin import CustomReplay
 from avalanche.training.storage_policy import ParametricBuffer, RandomExemplarsSelectionStrategy
+from avalanche.training.templates import SupervisedTemplate
+from avalanche.training.plugins import ReplayPlugin, EWCPlugin
+
 storage_p = ParametricBuffer(
     max_size=300,
     # groupby='class',
@@ -47,13 +50,19 @@ model = SimpleMLP(input_size=3, num_classes=3, hidden_size=128, hidden_layers=1,
 # optimizer = SGD(model.parameters(), lr=0.01, momentum=0.9)
 optimizer = Adam(model.parameters(),lr=0.01, weight_decay=0.00001)
 criterion = MSELoss(reduction="mean")
-cl_strategy = Naive(
+
+replay = ReplayPlugin(mem_size=100)
+ewc = EWCPlugin(ewc_lambda=0.0001)
+cl_strategy = SupervisedTemplate(
     model, optimizer, criterion,
-    train_mb_size=10, 
-    train_epochs=5, 
-    plugins=[CustomReplay(storage_p)],
-    eval_mb_size=1
-)
+    plugins=[replay, ewc])
+# cl_strategy = Naive(
+#     model, optimizer, criterion,
+#     train_mb_size=10, 
+#     train_epochs=5, 
+#     plugins=[CustomReplay(storage_p)],
+#     eval_mb_size=1
+# )
 
 # TRAINING LOOP
 print('Starting experiment...')
