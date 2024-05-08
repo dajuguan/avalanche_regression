@@ -4,6 +4,13 @@ from avalanche.benchmarks.utils import AvalancheDataset
 from avalanche.benchmarks import dataset_benchmark,nc_benchmark,ni_benchmark,benchmark_from_datasets
 from avalanche.benchmarks.utils import make_avalanche_dataset
 from avalanche.benchmarks.utils import DataAttribute, ConstantSequence
+from replay_plugin import CustomReplay
+from avalanche.training.storage_policy import ParametricBuffer, RandomExemplarsSelectionStrategy
+storage_p = ParametricBuffer(
+    max_size=300,
+    # groupby='class',
+    selection_strategy=RandomExemplarsSelectionStrategy()
+)
 
 # Create a dataset of 100 data points described by 22 features + 1 class label
 N=100
@@ -43,7 +50,8 @@ criterion = MSELoss(reduction="mean")
 cl_strategy = Naive(
     model, optimizer, criterion,
     train_mb_size=10, 
-    train_epochs=20, 
+    train_epochs=5, 
+    plugins=[CustomReplay(storage_p)],
     eval_mb_size=1
 )
 
@@ -63,5 +71,6 @@ x = torch.Tensor([x.tolist()])
 model.eval()
 predict_y = model(x)
 print("x:", x)
-print("predicted y: ===========>", predict_y)
+print("y          : ===========>", y_data[1,:])
+print("predicted y: ===========>", predict_y[0])
 print("dividen:", predict_y / x)
