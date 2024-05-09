@@ -5,6 +5,7 @@ from avalanche.benchmarks.utils import AvalancheDataset
 from avalanche.benchmarks import dataset_benchmark,nc_benchmark,ni_benchmark,benchmark_from_datasets
 from avalanche.benchmarks.utils import make_avalanche_dataset
 from avalanche.benchmarks.utils import DataAttribute, ConstantSequence
+from plugins import CustomReplay, CustomAccuracyPlugin
 
 # Create a dataset of 100 data points described by 22 features + 1 class label
 data = np.loadtxt(r"./data.csv", delimiter=",",skiprows=1, dtype=np.float32)
@@ -40,6 +41,7 @@ model = SimpleMLP(input_size=x_data.shape[1], num_classes=y_data.shape[1], hidde
 # optimizer = SGD(model.parameters(), lr=0.01, momentum=0.9)
 optimizer = Adam(model.parameters(),lr=0.01, weight_decay=0.00001)
 criterion = MSELoss(reduction="mean")
+
 cl_strategy = Naive(
     model, optimizer, criterion,
     train_mb_size=10, 
